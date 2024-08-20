@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="data"
+            type="com.imrkjoseph.ispeed.app.shared.widget.DialogFactory.DialogAttributes"/>
+    </data>
+
+    <androidx.cardview.widget.CardView
+        style="@style/MatchWrapContent"
+        android:elevation="6dp"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="8dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            style="@style/MatchWrapContent">
+
+            <TextView
+                android:id="@+id/reminder_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="@{data.title}"
+                android:textAlignment="center"
+                android:textSize="16dp"
+                android:fontFamily="@font/poppinsmedium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="sample title text"/>
+
+            <TextView
+                android:id="@+id/reminder_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginHorizontal="16dp"
+                android:textAlignment="center"
+                android:text="@{data.subTitle}"
+                android:textSize="14dp"
+                android:fontFamily="@font/poppinsregular"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/reminder_title"
+                tools:text="sample subtitle text"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginHorizontal="16dp"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/reminder_description">
+
+                <Button
+                    android:id="@+id/primary_button"
+                    android:layout_width="fill_parent"
+                    android:layout_weight="1"
+                    android:text="@{data.primaryButtonTitle}"
+                    android:clickable="true"
+                    android:foreground="?selectableItemBackground"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppinsregular"
+                    android:layout_marginEnd="10dp"
+                    android:textSize="14dp"
+                    android:textAllCaps="false"
+                    android:layout_height="wrap_content"
+                    tools:text="Cancel"/>
+
+                <Button
+                    android:id="@+id/secondary_button"
+                    android:layout_marginStart="10dp"
+                    android:layout_width="fill_parent"
+                    android:clickable="true"
+                    android:textColor="@color/white"
+                    android:foreground="?selectableItemBackground"
+                    android:layout_weight="1"
+                    android:textSize="14dp"
+                    android:textAllCaps="false"
+                    android:text="@{data.secondaryButtonTitle}"
+                    android:fontFamily="@font/poppinsregular"
+                    android:layout_height="wrap_content"
+                    tools:text="Okay"/>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
+
+
+
+

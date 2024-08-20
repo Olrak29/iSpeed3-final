@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/MatchParent"
+    tools:context=".register.presentation.RegisterActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/light_green"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+
+                android:text="Account Registration"
+                android:textSize="24dp"
+                android:fontFamily="@font/poppinsmedium"
+                android:textColor="@color/black"
+                android:textAlignment="center"
+                android:padding="16dp"
+                android:background="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/poppinsregular"
+                android:text="Register your credentials below"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+            <EditText
+                android:id="@+id/input_FirstName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="32dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="First Name"
+                android:inputType="textPersonName"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/header" />
+
+            <EditText
+                android:id="@+id/input_LastName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="Last Name"
+                android:inputType="textPersonName"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/input_FirstName"
+                app:layout_constraintStart_toStartOf="@+id/input_FirstName"
+                app:layout_constraintTop_toBottomOf="@+id/input_FirstName" />
+
+            <EditText
+                android:id="@+id/input_EmailAddress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="Email Address"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/input_LastName"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toStartOf="@+id/input_LastName"
+                app:layout_constraintTop_toBottomOf="@+id/input_institution" />
+
+            <EditText
+                android:id="@+id/input_confirmPassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/input_Password"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/input_Password"
+                app:layout_constraintTop_toBottomOf="@+id/input_Password" />
+
+            <TextView
+                android:id="@+id/signin_account"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="32dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/poppinsregular"
+                android:text="@string/hint_already_have_an_account_signin"
+                android:textColor="@color/white"
+                android:textSize="14dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/input_confirmPassword" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_Register"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="32dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="32dp"
+                android:background="@drawable/shape_button"
+                android:fontFamily="@font/poppinsmedium"
+                android:text="Submit"
+                android:textColor="@color/white"
+                android:textAllCaps="false"
+                android:textSize="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/signin_account" />
+
+            <EditText
+                android:id="@+id/input_Password"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/input_EmailAddress"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/input_EmailAddress"
+                app:layout_constraintTop_toBottomOf="@+id/input_EmailAddress" />
+
+            <TextView
+                android:id="@+id/tv_matcher"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Passwords do not match."
+                android:textColor="#F44336"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/input_confirmPassword"
+                app:layout_constraintStart_toStartOf="@+id/input_confirmPassword"
+                app:layout_constraintTop_toBottomOf="@+id/input_confirmPassword" />
+
+            <EditText
+                android:id="@+id/input_institution"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/shape_edit_text"
+                android:ems="10"
+                android:fontFamily="@font/poppinsregular"
+                android:hint="Institution"
+                android:inputType="textPersonName"
+                android:textColor="@color/black"
+                android:textColorHint="@color/darkGray"
+                android:textSize="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/input_LastName"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/input_LastName"
+                app:layout_constraintTop_toBottomOf="@+id/input_LastName" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        style="@style/ConstraintParent"
+        layout="@layout/widget_loading"
+        android:id="@+id/loading_widget"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
