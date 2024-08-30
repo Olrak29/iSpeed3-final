@@ -1,18 +1,31 @@
 package com.thesis.ispeed.dashboard.screens.automatic_track
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.Intent.CATEGORY_DEFAULT
+import android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Looper
+import android.provider.Settings
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.util.LruCache
 import android.view.View
+import androidx.annotation.NonNull
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
@@ -27,7 +40,11 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import com.thesis.ispeed.R
 import com.thesis.ispeed.app.component.CustomRecyclerView
 import com.thesis.ispeed.app.foundation.BaseFragment
@@ -58,12 +75,13 @@ import java.io.IOException
 import java.util.Calendar
 import java.util.Locale
 
+
 @AndroidEntryPoint
 class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindingInflater = FragmentAutomaticTrackBinding::inflate) {
 
-    private var latitude: Double? = null
+    private var latitude: Double = 0.0
 
-    private var longitude: Double? = null
+    private var longitude: Double = 0.0
 
     private var currentLocation: String? = null
 
@@ -72,8 +90,6 @@ class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindi
     private val REQUEST_LOCATION = 1
 
     private val REQUEST_MEDIA = 2
-
-    private var fusedLocationClient: FusedLocationProviderClient? = null
 
     private var trackList: MutableList<TrackInternetModel>? = ArrayList()
 
@@ -87,7 +103,6 @@ class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindi
         super.onViewCreated()
         with(binding) {
             setupGoogleClient()
-            setupObserveLocation()
             setupComponents()
             setupObserver()
             checkLocationPermission()
@@ -123,18 +138,65 @@ class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindi
         setupLabels()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        @NonNull permissions: Array<String>,
+        @NonNull grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates()
+            } else {
+                showPermissionAlertDialog()
+            }
+        }
+    }
+
+    private fun showPermissionAlertDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage("Location permission is denied, we need to access the location to get your address, do you want to turn it on?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
+                val intent = Intent(ACTION_APPLICATION_DETAILS_SETTINGS)
+                with(intent) {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
+                    addCategory(CATEGORY_DEFAULT)
+                    addFlags(FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(FLAG_ACTIVITY_NO_HISTORY)
+                    addFlags(FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.cancel()
+                showPermissionAlertDialog()
+            }
+        val alert: AlertDialog = builder.create()
+        alert.setCancelable(false)
+        alert.setCanceledOnTouchOutside(false)
+        alert.show()
+    }
+
     private fun checkLocationPermission() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        mLocationRequest = LocationRequest.create()
+
+        val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
         if (ActivityCompat.checkSelfPermission(
                 requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                getAppActivity(),
+            requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION
             )
+        } else if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            showAlertMessage()
+        } else {
+            startLocationUpdates()
         }
     }
 
@@ -399,44 +461,93 @@ class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindi
         }
     }
 
-    private fun setupObserveLocation() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-        ) {
+    private var fusedLocationProviderClient: FusedLocationProviderClient? = null
+    private val interval: Long = 10000 // 10seconds
+    private val fastestInterval: Long = 5000 // 5 seconds
+    private lateinit var mLastLocation: Location
+    private lateinit var mLocationRequest: LocationRequest
+
+    override fun onPause() {
+        super.onPause()
+        fusedLocationProviderClient?.removeLocationUpdates(mLocationCallback)
+    }
+
+    private fun startLocationUpdates() {
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.interval = interval
+        mLocationRequest.fastestInterval = fastestInterval
+
+        val builder = LocationSettingsRequest.Builder()
+        builder.addLocationRequest(mLocationRequest)
+        val locationSettingsRequest = builder.build()
+        val settingsClient = LocationServices.getSettingsClient(requireContext())
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
             return
         }
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-        fusedLocationClient?.lastLocation?.addOnSuccessListener {  location ->
-            // Get last known location. In some rare situations this can be null.
-            if (location != null) {
-                try {
-                    if (ActivityCompat.checkSelfPermission(
-                           requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                            requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        ActivityCompat.requestPermissions(
-                            getAppActivity(),
-                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                            REQUEST_LOCATION
-                        )
-                    } else {
-                        latitude = location.latitude
-                        longitude = location.longitude
-                        getCityName(latitude, longitude)
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
+        try {
+            fusedLocationProviderClient?.requestLocationUpdates(
+                mLocationRequest,
+                mLocationCallback,
+                Looper.myLooper()!!
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
-                // Internet automatically starts, when this screen is open.
-                if (requireContext().isServiceRunning(TrackingService::class.java).not()) {
-                    startBackgroundTracking()
-                }
+    private val mLocationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            locationResult.lastLocation
+            locationChanged(locationResult.lastLocation)
+            latitude = locationResult.lastLocation.latitude
+            longitude = locationResult.lastLocation.longitude
+
+            // Internet automatically starts, when this screen is open.
+            if (requireContext().isServiceRunning(TrackingService::class.java).not()) {
+                startBackgroundTracking()
             }
         }
+    }
+
+    fun locationChanged(location: Location) {
+        mLastLocation = location
+        longitude = mLastLocation.longitude
+        latitude = mLastLocation.latitude
+
+        // Get last known location. In some rare situations this can be null.
+        try {
+            latitude = location.latitude
+            longitude = location.longitude
+            getCityName(latitude, longitude)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun showAlertMessage() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage("Location is disabled, we need to turn on the location to get your address, do you want to turn it on?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
+                startActivityForResult(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS),10)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.cancel()
+                showAlertMessage()
+            }
+        val alert: AlertDialog = builder.create()
+        alert.setCancelable(false)
+        alert.setCanceledOnTouchOutside(false)
+        alert.show()
     }
 
     private fun getCityName(lat: Double?,long: Double?) {
@@ -466,6 +577,7 @@ class AutomaticTrackFragment : BaseFragment<FragmentAutomaticTrackBinding>(bindi
                 }
             }
             currentLocation = result
+            binding.locationName.text = "Location: $currentLocation"
         }
     }
 
