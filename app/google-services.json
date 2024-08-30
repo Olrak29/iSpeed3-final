@@ -71,6 +71,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278601873437:android:bd2584bf5a734a253d2ef4",
+        "android_client_info": {
+          "package_name": "com.thesis.ispeed"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "278601873437-arcltg3bhd2s4jhvaavs0tbqrtht6jku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBO_FnQ3khe9CC91okDJ-_TAYBxqGzlZZk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "278601873437-arcltg3bhd2s4jhvaavs0tbqrtht6jku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"
