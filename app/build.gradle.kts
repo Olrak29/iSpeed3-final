@@ -109,6 +109,8 @@ dependencies {
         exclude(group = "com.android.support", module = "support-annotations")
     }
 
+    implementation("com.google.android.gms:play-services-location:19.0.1")
+
     // Event Bus
     implementation("org.greenrobot:eventbus:3.3.1")
 

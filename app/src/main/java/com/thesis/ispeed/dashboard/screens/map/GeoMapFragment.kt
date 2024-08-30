@@ -1,13 +1,20 @@
 package com.thesis.ispeed.dashboard.screens.map
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.provider.Settings
 import android.view.View
+import androidx.annotation.NonNull
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -94,7 +101,48 @@ class GeoMapFragment : BaseFragment<FragmentGeoMapBinding>(bindingInflater = Fra
             createGoogleApiClient()
             observeLocationClient()
             setupObserver()
+            checkLocationPermission()
         }
+    }
+
+    private fun checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                getAppActivity(),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION
+            )
+        }
+    }
+
+    private fun showPermissionAlertDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage("Location permission is denied, we need to access the location to get your address, do you want to turn it on?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                with(intent) {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
+                    addCategory(Intent.CATEGORY_DEFAULT)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+                    addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.cancel()
+                showPermissionAlertDialog()
+            }
+        val alert: AlertDialog = builder.create()
+        alert.setCancelable(false)
+        alert.setCanceledOnTouchOutside(false)
+        alert.show()
     }
 
     private fun setupObserver() {
@@ -134,7 +182,6 @@ class GeoMapFragment : BaseFragment<FragmentGeoMapBinding>(bindingInflater = Fra
 
                 return@setOnClickListener
             }
-
             measureSpeedTest()
         }
     }
@@ -542,6 +589,12 @@ class GeoMapFragment : BaseFragment<FragmentGeoMapBinding>(bindingInflater = Fra
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsManager!!.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == REQUEST_LOCATION) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                showPermissionAlertDialog()
+            }
+        }
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
